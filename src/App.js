@@ -1,26 +1,62 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React, { useState, useEffect } from 'react';
+import styled from 'styled-components';
 
-function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
-}
+const Container = styled.div`border: ${({ theme }) => `3px solid ${theme.darkerGray}`};`;
+
+const Title = styled.h1`color: ${(props) => props.theme.darkGray};`;
+
+const Button = styled.button`background-color: ${(props) => (props.success ? 'green' : 'red')};`;
+
+const List = styled.li`color: blue;`;
+
+const App = () => {
+	const [ isActive, toggleActive ] = useState(false);
+	const [ initialTime, setInitialTime ] = useState(0);
+	const [ times, setTimes ] = useState([]);
+
+	useEffect(
+		() => {
+			let interval = null;
+
+			if (isActive) {
+				interval = setInterval(() => {
+					setInitialTime((prev) => prev + 1);
+				}, 1000);
+			} else if (isActive && initialTime !== 0) {
+				clearInterval(interval);
+			}
+
+			return () => clearInterval(interval);
+		},
+		[ isActive, initialTime ]
+	);
+
+	const handleReset = () => {
+		toggleActive(false);
+		setInitialTime(0);
+	};
+
+	const handleRecord = () => {
+		setTimes((prev) => [ ...prev, initialTime ]);
+	};
+
+	return (
+		<Container>
+			<Title>Timer: {initialTime}</Title>
+			<Button success onClick={() => toggleActive((prev) => !prev)}>
+				{isActive ? 'Pause' : 'Start'}
+			</Button>
+			<Button danger onClick={handleReset}>
+				Reset
+			</Button>
+			{!isActive && initialTime !== 0 ? (
+				<Button success onClick={handleRecord}>
+					Record
+				</Button>
+			) : null}
+			{times.length > 0 ? <ul>{times.map((time) => <List>{time}</List>)}</ul> : null}
+		</Container>
+	);
+};
 
 export default App;
